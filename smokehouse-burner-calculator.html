@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smokehouse Burner Savings Calculator | Solvify</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --smoke:    #1C1A18;
+    --ash:      #2E2B27;
+    --ember:    #C8540A;
+    --ember-lt: #E8702A;
+    --flame:    #F4A340;
+    --cream:    #F5F0E8;
+    --mist:     #EDE8DE;
+    --text:     #1C1A18;
+    --subtle:   #6B6458;
+    --border:   #D4CEC4;
+    --white:    #FFFFFF;
+  }
+
+  html { font-size: 16px; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--smoke);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    border-bottom: 2px solid var(--ember);
+  }
+
+  .logo-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-img {
+    height: 32px;
+    width: auto;
+    filter: brightness(0) invert(1);
+  }
+
+  .logo-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.2rem;
+    color: var(--white);
+    letter-spacing: 0.02em;
+  }
+
+  .header-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--flame);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    background: var(--smoke);
+    padding: 52px 24px 48px;
+    text-align: center;
+  }
+
+  .hero-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--flame);
+    margin-bottom: 16px;
+  }
+
+  .hero h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    color: var(--white);
+    line-height: 1.15;
+    max-width: 640px;
+    margin: 0 auto 20px;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--flame);
+  }
+
+  .hero-sub {
+    font-size: 1rem;
+    color: #AAA39A;
+    max-width: 520px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  /* ── FLAME DIVIDER ── */
+  .divider {
+    height: 4px;
+    background: linear-gradient(90deg, var(--ember) 0%, var(--flame) 50%, var(--ember) 100%);
+  }
+
+  /* ── LAYOUT ── */
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  .calc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    align-items: start;
+  }
+
+  @media (max-width: 680px) {
+    .calc-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ── PANELS ── */
+  .panel {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .panel-head {
+    background: var(--ash);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .panel-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+
+  .panel-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--flame);
+  }
+
+  .panel-body {
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* ── FORM FIELDS ── */
+  .field { display: flex; flex-direction: column; gap: 6px; }
+
+  .field label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--subtle);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  .field-note {
+    font-size: 0.75rem;
+    color: #9B9590;
+    line-height: 1.4;
+    margin-top: 2px;
+  }
+
+  .input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .input-wrap input,
+  .input-wrap select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 3px;
+    font-size: 1rem;
+    font-family: 'DM Mono', monospace;
+    color: var(--text);
+    background: var(--cream);
+    appearance: none;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .input-wrap input:focus,
+  .input-wrap select:focus {
+    border-color: var(--ember);
+  }
+
+  .unit {
+    position: absolute;
+    right: 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--subtle);
+    pointer-events: none;
+  }
+
+  .input-wrap input[type="number"] { padding-right: 56px; }
+
+  input[type="range"] {
+    width: 100%;
+    accent-color: var(--ember);
+    cursor: pointer;
+    margin-top: 4px;
+  }
+
+  .range-labels {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--subtle);
+    margin-top: 4px;
+  }
+
+  /* ── RESULTS PANEL ── */
+  .results-panel {
+    background: var(--smoke);
+    border-radius: 4px;
+    overflow: hidden;
+    position: sticky;
+    top: 20px;
+  }
+
+  .results-head {
+    background: var(--ember);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .results-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--white);
+  }
+
+  .results-body {
+    padding: 28px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .big-number {
+    text-align: center;
+    padding: 24px 16px;
+    background: var(--ash);
+    border-radius: 3px;
+  }
+
+  .big-number-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #8A8278;
+    margin-bottom: 8px;
+  }
+
+  .big-number-value {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2.4rem, 6vw, 3.4rem);
+    color: var(--flame);
+    line-height: 1;
+    letter-spacing: -0.01em;
+  }
+
+  .big-number-sub {
+    font-size: 0.8rem;
+    color: #7A7470;
+    margin-top: 8px;
+  }
+
+  .metric-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 10px 0;
+    border-bottom: 1px solid #2E2B27;
+  }
+
+  .metric-row:last-child { border-bottom: none; }
+
+  .metric-label {
+    font-size: 0.8rem;
+    color: #8A8278;
+    line-height: 1.3;
+    max-width: 58%;
+  }
+
+  .metric-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.92rem;
+    color: var(--cream);
+    font-weight: 500;
+    text-align: right;
+  }
+
+  .metric-value.highlight { color: var(--flame); }
+
+  /* ── ASSUMPTION NOTE ── */
+  .assumption-box {
+    background: #2E2B27;
+    border-left: 3px solid var(--ember);
+    padding: 14px 16px;
+    border-radius: 0 3px 3px 0;
+  }
+
+  .assumption-box p {
+    font-size: 0.76rem;
+    color: #8A8278;
+    line-height: 1.55;
+  }
+
+  .assumption-box p + p { margin-top: 8px; }
+
+  /* ── CTA ── */
+  .cta-block {
+    background: var(--ash);
+    border-top: 2px solid var(--ember);
+    padding: 20px;
+    text-align: center;
+  }
+
+  .cta-block p {
+    font-size: 0.82rem;
+    color: #8A8278;
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+
+  .cta-btn {
+    display: inline-block;
+    background: var(--ember);
+    color: var(--white);
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 11px 22px;
+    border-radius: 3px;
+    text-decoration: none;
+    letter-spacing: 0.02em;
+    transition: background 0.15s;
+  }
+
+  .cta-btn:hover { background: var(--ember-lt); }
+
+  .cta-contact {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 6px 14px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid #3A3733;
+    font-size: 0.78rem;
+    color: #8A8278;
+  }
+
+  .cta-contact span {
+    font-weight: 600;
+    color: var(--cream);
+  }
+
+  .cta-contact a {
+    color: var(--flame);
+    text-decoration: none;
+  }
+
+  .cta-contact a:hover { text-decoration: underline; }
+
+  /* ── BELOW-FOLD CONTEXT ── */
+  .context-section {
+    margin-top: 56px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 24px;
+  }
+
+  @media (max-width: 680px) {
+    .context-section { grid-template-columns: 1fr; }
+  }
+
+  .context-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 24px 20px;
+  }
+
+  .context-card-icon {
+    font-size: 1.6rem;
+    margin-bottom: 12px;
+  }
+
+  .context-card h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1rem;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+
+  .context-card p {
+    font-size: 0.82rem;
+    color: var(--subtle);
+    line-height: 1.6;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--smoke);
+    border-top: 2px solid var(--ember);
+    padding: 24px;
+    text-align: center;
+  }
+
+  footer p {
+    font-size: 0.78rem;
+    color: #6B6458;
+    line-height: 1.6;
+  }
+
+  footer a {
+    color: var(--flame);
+    text-decoration: none;
+  }
+
+  footer a:hover { text-decoration: underline; }
+
+  .footer-brand {
+    font-family: 'DM Serif Display', serif;
+    font-size: 0.95rem;
+    color: var(--white);
+    margin-bottom: 6px;
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo-wrap">
+    <span class="logo-name">Solvify</span>
+  </div>
+  <span class="header-tag">Burner Tuning Calculator</span>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <p class="hero-eyebrow">Free Savings Estimator</p>
+  <h1>How much is an <em>untuned burner</em> costing your smokehouse?</h1>
+  <p class="hero-sub">Most commercial smokehouses and meat dryers run hotter at low fire than they should. Enter your operation details below to estimate your annual gas waste.</p>
+</div>
+<div class="divider"></div>
+
+<!-- CALCULATOR -->
+<div class="container">
+  <div class="calc-grid">
+
+    <!-- LEFT: INPUTS -->
+    <div>
+
+      <!-- OPERATION PANEL -->
+      <div class="panel" style="margin-bottom:24px;">
+        <div class="panel-head">
+          <svg class="panel-icon" viewBox="0 0 20 20" fill="none">
+            <rect x="2" y="3" width="16" height="12" rx="1.5" stroke="#C8540A" stroke-width="1.5"/>
+            <path d="M6 15v2M14 15v2" stroke="#C8540A" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M7 9c0-1.5 2-3 3-1.5S13 9 13 9" stroke="#F4A340" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+          <span class="panel-title">Your Operation</span>
+        </div>
+        <div class="panel-body">
+
+          <div class="field">
+            <label>Smokehouse / Dryer Type</label>
+            <div class="input-wrap">
+              <select id="opType" onchange="calc()">
+                <option value="jerky">Jerky dryer / meat dehydrator</option>
+                <option value="smokehouse">Smokehouse (sausage, ham, bacon)</option>
+                <option value="combo">Combined smokehouse + dryer</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Number of Units / Zones</label>
+            <div class="input-wrap">
+              <input type="number" id="numUnits" value="2" min="1" max="20" onchange="calc()"/>
+              <span class="unit">units</span>
+            </div>
+            <span class="field-note">Count each independently fired zone or smokehouse chamber separately.</span>
+          </div>
+
+          <div class="field">
+            <label>Rated High-Fire Capacity (per unit)</label>
+            <div class="input-wrap">
+              <input type="number" id="highFire" value="2000000" step="100000" min="100000" onchange="calc()"/>
+              <span class="unit">BTU/hr</span>
+            </div>
+            <span class="field-note">Check your burner nameplate. Common range: 500K to 4M BTU/hr.</span>
+          </div>
+
+          <div class="field">
+            <label>Production Days Per Year</label>
+            <div class="input-wrap">
+              <input type="number" id="daysYear" value="250" min="50" max="365" onchange="calc()"/>
+              <span class="unit">days</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Average Run Hours Per Day</label>
+            <div class="input-wrap">
+              <input type="number" id="runHours" value="14" min="1" max="24" onchange="calc()"/>
+              <span class="unit">hrs/day</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- BURNER PERFORMANCE PANEL -->
+      <div class="panel">
+        <div class="panel-head">
+          <svg class="panel-icon" viewBox="0 0 20 20" fill="none">
+            <path d="M10 17c-3.866 0-7-2.91-7-6.5C3 7 6.5 5 10 3c3.5 2 7 4 7 7.5C17 14.09 13.866 17 10 17z" stroke="#C8540A" stroke-width="1.5"/>
+            <path d="M10 17v-6M7 13l3-2 3 2" stroke="#F4A340" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="panel-title">Burner Performance</span>
+        </div>
+        <div class="panel-body">
+
+          <div class="field">
+            <label>Idle / Low-Fire Time (% of run time)</label>
+            <input type="range" id="idlePct" min="10" max="60" value="30" step="5" oninput="updateIdleLabel();calc()"/>
+            <div class="range-labels">
+              <span>10%</span>
+              <span id="idleLabel" style="color:var(--ember);font-weight:600;">30%</span>
+              <span>60%</span>
+            </div>
+            <span class="field-note">Time the burner spends at low fire between batches, during loading, or at temperature hold. Many operations are 25 to 40%.</span>
+          </div>
+
+          <div class="field">
+            <label>Your Target Low-Fire Input (per unit)</label>
+            <div class="input-wrap">
+              <input type="number" id="targetLow" value="300000" step="50000" min="50000" onchange="calc()"/>
+              <span class="unit">BTU/hr</span>
+            </div>
+            <span class="field-note">What the burner is supposed to idle at per spec or production requirement.</span>
+          </div>
+
+          <div class="field">
+            <label>Estimated Actual Low-Fire Input (per unit)</label>
+            <div class="input-wrap">
+              <input type="number" id="actualLow" value="650000" step="50000" min="50000" onchange="calc()"/>
+              <span class="unit">BTU/hr</span>
+            </div>
+            <span class="field-note">What it actually runs at. Not sure? A common finding is 1.5x to 3x the target. The Forest Tech job showed a gap of 2.5x.</span>
+          </div>
+
+          <div class="field">
+            <label>Natural Gas Rate</label>
+            <div class="input-wrap">
+              <input type="number" id="gasRate" value="0.85" step="0.05" min="0.20" onchange="calc()"/>
+              <span class="unit">$/therm</span>
+            </div>
+            <span class="field-note">Current PNW commercial average is roughly $0.75 to $1.10 per therm. Check your bill for your rate.</span>
+          </div>
+
+        </div>
+      </div>
+
+    </div><!-- /LEFT -->
+
+    <!-- RIGHT: RESULTS -->
+    <div>
+      <div class="results-panel">
+        <div class="results-head">
+          <svg class="panel-icon" viewBox="0 0 20 20" fill="none">
+            <path d="M4 14l4-4 3 3 5-6" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="results-title">Estimated Annual Gas Waste</span>
+        </div>
+        <div class="results-body">
+
+          <div class="big-number">
+            <div class="big-number-label">Excess Gas Cost Per Year</div>
+            <div class="big-number-value" id="annualCost">$0</div>
+            <div class="big-number-sub" id="annualCostSub">from low-fire setpoint gap</div>
+          </div>
+
+          <div>
+            <div class="metric-row">
+              <span class="metric-label">Wasted BTUs per idle hour (per unit)</span>
+              <span class="metric-value highlight" id="btuGap">-- BTU/hr</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">Total idle hours per year (all units)</span>
+              <span class="metric-value" id="idleHours">--</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">Wasted therms per year</span>
+              <span class="metric-value" id="wastedTherms">--</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">Typical tuning cost (1-2 days on-site)</span>
+              <span class="metric-value" id="tuningCost">$2,000 – $4,000</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">Simple payback period</span>
+              <span class="metric-value highlight" id="payback">--</span>
+            </div>
+          </div>
+
+          <div class="assumption-box">
+            <p>These are estimates based on the inputs you provide and a typical low-fire gap pattern. Actual waste depends on your specific burner, chamber conditions, and airflow setup.</p>
+            <p>The only way to know your real number is to put a combustion analyzer on the burner on-site. That is what Solvify does.</p>
+          </div>
+
+        </div>
+        <div class="cta-block">
+          <p>Get a free 15-minute phone assessment to find out whether your setup is worth a look.</p>
+          <a class="cta-btn" href="https://meetings-na2.hubspot.com/briana-liddell" target="_blank">Book a Free Call with Briana, PE</a>
+          <div class="cta-contact">
+            <span>Briana Liddell, PE</span>
+            <a href="tel:2532563217">(253) 256-3217</a>
+            <a href="mailto:briana.liddell@solvify-llc.com">briana.liddell@solvify-llc.com</a>
+          </div>
+        </div>
+      </div>
+    </div><!-- /RIGHT -->
+
+  </div><!-- /calc-grid -->
+
+  <!-- CONTEXT CARDS -->
+  <div class="context-section">
+    <div class="context-card">
+      <div class="context-card-icon">🔥</div>
+      <h3>What causes the gap?</h3>
+      <p>Most smokehouses are commissioned to run reliably at high fire. The low-fire setpoint is often left higher than it needs to be because chamber airflow pushes the burner into instability at low load. The fix is an on-site combustion analysis, not a new burner.</p>
+    </div>
+    <div class="context-card">
+      <div class="context-card-icon">📊</div>
+      <h3>A real example</h3>
+      <p>On a recent two-zone commercial food dryer job, the burners were idling at roughly 2.5x their 140,000 BTU/hr target. Solvify diagnosed the root cause as chamber perpendicular airflow, corrected it on-site, and delivered a prioritized improvement roadmap.</p>
+    </div>
+    <div class="context-card">
+      <div class="context-card-icon">⚙️</div>
+      <h3>What the work looks like</h3>
+      <p>One to two days on-site. Combustion analyzer on the burner. Measurement of actual vs. target firing rates. Root cause diagnosis. Written fix roadmap with priority order. No long-term contract required. PE-stamped documentation available.</p>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<!-- FOOTER -->
+<footer>
+  <p class="footer-brand">Solvify LLC</p>
+  <p>Briana Liddell, PE &nbsp;|&nbsp; <a href="tel:2532563217">(253) 256-3217</a> &nbsp;|&nbsp; <a href="mailto:briana.liddell@solvify-llc.com">briana.liddell@solvify-llc.com</a> &nbsp;|&nbsp; <a href="https://www.solvify-llc.com" target="_blank">solvify-llc.com</a></p>
+  <p style="margin-top:8px;">Estimates are illustrative and based on user inputs. Actual savings vary by facility. Contact Solvify for a site-specific assessment.</p>
+</footer>
+
+<script>
+  function fmt(n) {
+    if (n >= 1000000) return (n / 1000000).toFixed(2) + 'M';
+    if (n >= 1000) return Math.round(n / 100) * 100 >= 1000 ? (n / 1000).toFixed(0) + 'K' : n.toLocaleString();
+    return n.toLocaleString();
+  }
+
+  function fmtMoney(n) {
+    if (n >= 100000) return '$' + (n / 1000).toFixed(0) + 'K';
+    if (n >= 10000) return '$' + (n / 1000).toFixed(1) + 'K';
+    return '$' + Math.round(n).toLocaleString();
+  }
+
+  function updateIdleLabel() {
+    document.getElementById('idleLabel').textContent = document.getElementById('idlePct').value + '%';
+  }
+
+  function calc() {
+    const units     = parseFloat(document.getElementById('numUnits').value)   || 1;
+    const daysYear  = parseFloat(document.getElementById('daysYear').value)   || 250;
+    const runHours  = parseFloat(document.getElementById('runHours').value)   || 14;
+    const idlePct   = parseFloat(document.getElementById('idlePct').value)    || 30;
+    const targetLow = parseFloat(document.getElementById('targetLow').value)  || 300000;
+    const actualLow = parseFloat(document.getElementById('actualLow').value)  || 650000;
+    const gasRate   = parseFloat(document.getElementById('gasRate').value)    || 0.85;
+
+    const gap      = Math.max(0, actualLow - targetLow);               // BTU/hr per unit at idle
+    const idleHrs  = daysYear * runHours * (idlePct / 100);            // idle hours/year per unit
+    const totIdle  = idleHrs * units;                                   // idle hours across all units
+    const wastedBTU = gap * totIdle;                                    // total wasted BTUs/year
+    const therms   = wastedBTU / 100000;                                // 1 therm = 100,000 BTU
+    const cost     = therms * gasRate;
+
+    // Payback
+    const tuningLow = 2000, tuningHigh = 4000;
+    const pbLow  = cost > 0 ? (tuningLow  / cost * 12).toFixed(1) : '--';
+    const pbHigh = cost > 0 ? (tuningHigh / cost * 12).toFixed(1) : '--';
+
+    document.getElementById('btuGap').textContent       = gap > 0 ? fmt(gap) + ' BTU/hr' : '-- BTU/hr';
+    document.getElementById('idleHours').textContent    = totIdle > 0 ? Math.round(totIdle).toLocaleString() + ' hrs' : '--';
+    document.getElementById('wastedTherms').textContent = therms > 0 ? Math.round(therms).toLocaleString() + ' therms' : '--';
+    document.getElementById('annualCost').textContent   = cost > 0 ? fmtMoney(cost) : '$0';
+    document.getElementById('annualCostSub').textContent = cost > 0 
+      ? 'from running ' + gap.toLocaleString() + ' BTU/hr over target at idle'
+      : 'adjust inputs to see estimate';
+
+    if (cost > 0 && pbLow !== '--') {
+      document.getElementById('payback').textContent = pbLow + ' – ' + pbHigh + ' months';
+    } else {
+      document.getElementById('payback').textContent = '--';
+    }
+
+    // Clamp tuning cost display to make sense with scale
+    const tuningDisplay = units <= 2 
+      ? '$2,000 – $4,000'
+      : units <= 4 
+        ? '$3,000 – $6,000'
+        : '$4,000 – $8,000';
+    document.getElementById('tuningCost').textContent = tuningDisplay;
+  }
+
+  // Init
+  updateIdleLabel();
+  calc();
+</script>
+</body>
+</html>
